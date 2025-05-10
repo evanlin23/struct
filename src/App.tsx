@@ -1,42 +1,56 @@
 import { useEffect, useState } from 'react'
-import { initDB, addPDF, getPDFs, updatePDFStatus, deletePDF } from './utils/db'
+import { initDB, addPDF, getPDFs, updatePDFStatus, deletePDF, getClassPDFs } from './utils/db'
 import Header from './components/Header'
 import FileUpload from './components/FileUpload'
 import PDFList from './components/PDFList'
 import ProgressStats from './components/ProgressStats'
-
-export type PDF = {
-  id?: number;
-  name: string;
-  size: number;
-  lastModified: number;
-  data: ArrayBuffer;
-  status: 'to-study' | 'done';
-  dateAdded: number;
-}
+import ClassManagement from './components/ClassManagement'
+import type { PDF, Class } from './utils/types'
 
 function App() {
   const [pdfs, setPdfs] = useState<PDF[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'to-study' | 'done'>('to-study');
+  const [selectedClassId, setSelectedClassId] = useState<number | null>(null);
+  const [selectedClass, setSelectedClass] = useState<Class | null>(null);
 
   // Initialize the database
   useEffect(() => {
     const setupDatabase = async () => {
       await initDB();
-      await loadPDFs();
       setIsLoading(false);
     };
     
     setupDatabase();
   }, []);
 
+  // Load PDFs when class is selected
+  useEffect(() => {
+    if (selectedClassId !== null) {
+      loadPDFs();
+    }
+  }, [selectedClassId]);
+
   const loadPDFs = async () => {
-    const allPDFs = await getPDFs();
-    setPdfs(allPDFs);
+    setIsLoading(true);
+    
+    try {
+      if (selectedClassId === null) {
+        setPdfs([]);
+      } else {
+        const classPDFs = await getClassPDFs(selectedClassId);
+        setPdfs(classPDFs);
+      }
+    } catch (error) {
+      console.error('Failed to load PDFs:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleFileUpload = async (files: FileList) => {
+    if (selectedClassId === null) return;
+    
     setIsLoading(true);
     
     for (let i = 0; i < files.length; i++) {
@@ -50,7 +64,8 @@ function App() {
           lastModified: file.lastModified,
           data: arrayBuffer,
           status: 'to-study',
-          dateAdded: Date.now()
+          dateAdded: Date.now(),
+          classId: selectedClassId
         };
         
         await addPDF(pdfData);
@@ -71,6 +86,20 @@ function App() {
     await loadPDFs();
   };
 
+  const handleSelectClass = (classId: number) => {
+    setSelectedClassId(classId);
+  };
+
+  const handleBackToClasses = () => {
+    setSelectedClassId(null);
+    setPdfs([]);
+  };
+
+  // Handle creating and immediately selecting a new class
+  const handleCreateClass = (classId: number) => {
+    setSelectedClassId(classId);
+  };
+
   const toStudyPDFs = pdfs.filter(pdf => pdf.status === 'to-study');
   const donePDFs = pdfs.filter(pdf => pdf.status === 'done');
 
@@ -80,9 +109,17 @@ function App() {
     done: donePDFs.length
   };
 
+  if (selectedClassId === null) {
+    return <ClassManagement onSelectClass={handleSelectClass} onCreateClass={handleCreateClass} />;
+  }
+
   return (
     <div className="flex flex-col min-h-screen bg-gray-900">
-      <Header />
+      <Header 
+        className={selectedClass?.name || ''} 
+        onBackClick={handleBackToClasses} 
+        showBackButton={true}
+      />
       <main className="flex-1 container mx-auto px-4 py-6">
         <div className="flex flex-col md:flex-row md:space-x-6">
           <div className="w-full md:w-1/3 mb-6 md:mb-0">
