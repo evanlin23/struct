@@ -44,18 +44,13 @@ const Header: React.FC<HeaderProps> = ({ className, showBackButton = false, onBa
               <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
             </svg>
             <h1 className="ml-2 text-2xl font-bold text-gray-200">
-              PDF Study Tool
+              struct
               {className && (
                 <span className="font-normal text-gray-400 ml-2">
                   / {className}
                 </span>
               )}
             </h1>
-          </div>
-          <div>
-            <span className="text-gray-400">
-              Track and manage your study materials
-            </span>
           </div>
         </div>
       </div>

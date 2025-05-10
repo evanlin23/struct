@@ -65,12 +65,9 @@ const ClassManagement: React.FC<ClassManagementProps> = ({ onSelectClass, onCrea
     <div className="bg-gray-900 min-h-screen">
       <div className="bg-gray-800 py-8 mb-8">
         <div className="container mx-auto px-4">
-          <h1 className="text-3xl font-bold text-center text-gray-200">
-            Welcome to PDF Study Tool
+          <h1 className="text-3xl font-bold text-center text-green-400">
+            struct
           </h1>
-          <p className="text-gray-400 text-center mt-2">
-            Organize your study materials by classes
-          </p>
         </div>
       </div>
 

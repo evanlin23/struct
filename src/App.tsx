@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { initDB, addPDF, getPDFs, updatePDFStatus, deletePDF, getClassPDFs } from './utils/db'
+import { initDB, addPDF, updatePDFStatus, deletePDF, getClass, getClassPDFs } from './utils/db'
 import Header from './components/Header'
 import FileUpload from './components/FileUpload'
 import PDFList from './components/PDFList'
@@ -24,11 +24,23 @@ function App() {
     setupDatabase();
   }, []);
 
-  // Load PDFs when class is selected
+  // Load class data and PDFs when class is selected
   useEffect(() => {
-    if (selectedClassId !== null) {
-      loadPDFs();
-    }
+    const loadClassAndPDFs = async () => {
+      if (selectedClassId !== null) {
+        setIsLoading(true);
+        try {
+          const cls = await getClass(selectedClassId);
+          setSelectedClass(cls);
+          await loadPDFs();
+        } catch (error) {
+          console.error('Error loading data:', error);
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    };
+    loadClassAndPDFs();
   }, [selectedClassId]);
 
   const loadPDFs = async () => {
@@ -169,7 +181,16 @@ function App() {
       </main>
       
       <footer className="py-4 text-center text-gray-400 bg-gray-800">
-        <p>&copy; {new Date().getFullYear()} PDF Study Tool</p>
+        <div className="flex justify-center">
+          <a 
+            href="https://github.com/evanlin23/typedef" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="text-purple-400 hover:underline mx-2"
+          >
+            GitHub
+          </a>
+        </div>
       </footer>
     </div>
   );

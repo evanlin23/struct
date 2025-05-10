@@ -71,7 +71,9 @@ export const initDB = (): Promise<IDBDatabase> => {
         }
         
         // Add classId index to PDF store
-        const pdfStore = event.target?.transaction?.objectStore(PDF_STORE);
+        const transaction = (event.target as IDBOpenDBRequest).transaction;
+        const pdfStore = transaction?.objectStore(PDF_STORE);
+
         if (pdfStore && !pdfStore.indexNames.contains('classId')) {
           pdfStore.createIndex('classId', 'classId', { unique: false });
         }
