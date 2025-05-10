@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import './App.css'
 import { initDB, addPDF, getPDFs, updatePDFStatus, deletePDF } from './utils/db'
 import Header from './components/Header'
 import FileUpload from './components/FileUpload'
