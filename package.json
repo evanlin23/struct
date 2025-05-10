@@ -1,9 +1,12 @@
 {
   "name": "struct",
+  "homepage": "https://evanlin23.github.io/struct",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "predeploy": "pnpm run build",
+    "deploy": "gh-pages -d dist",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
