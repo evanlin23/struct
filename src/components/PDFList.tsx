@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import type { PDF } from '../App';
+import type { PDF } from '../utils/types';
 import PDFViewer from './PDFViewer';
 
 interface PDFListProps {
@@ -32,6 +32,15 @@ const PDFList: React.FC<PDFListProps> = ({ pdfs, onStatusChange, onDelete }) => 
   const handleCloseViewer = () => {
     setSelectedPDF(null);
   };
+  
+  const handleStatusChange = (id: number, newStatus: 'to-study' | 'done') => {
+    onStatusChange(id, newStatus);
+    
+    // Update the selected PDF if it's the one being changed
+    if (selectedPDF && selectedPDF.id === id) {
+      setSelectedPDF({...selectedPDF, status: newStatus});
+    }
+  };
 
   if (pdfs.length === 0) {
     return (
@@ -50,7 +59,7 @@ const PDFList: React.FC<PDFListProps> = ({ pdfs, onStatusChange, onDelete }) => 
         </svg>
         <h3 className="mt-2 text-lg font-medium text-gray-200">No PDFs available</h3>
         <p className="mt-1 text-gray-400">
-          {pdfs[0]?.status === 'to-study' 
+          {pdfs.length > 0 && pdfs[0]?.status === 'to-study' 
             ? 'Upload some PDFs to get started'
             : 'You haven\'t completed any PDFs yet'}
         </p>
@@ -64,7 +73,7 @@ const PDFList: React.FC<PDFListProps> = ({ pdfs, onStatusChange, onDelete }) => 
         <PDFViewer 
           pdf={selectedPDF} 
           onClose={handleCloseViewer}
-          onStatusChange={onStatusChange}
+          onStatusChange={handleStatusChange}
         />
       ) : (
         <div className="grid grid-cols-1 gap-4">
@@ -109,23 +118,27 @@ const PDFList: React.FC<PDFListProps> = ({ pdfs, onStatusChange, onDelete }) => 
                   View
                 </button>
                 
-                <button
-                  onClick={() => onStatusChange(pdf.id!, pdf.status === 'to-study' ? 'done' : 'to-study')}
-                  className={`px-3 py-1 text-sm rounded hover:opacity-90 transition-opacity ${
-                    pdf.status === 'to-study'
-                      ? 'bg-green-500 text-gray-200'
-                      : 'bg-gray-600 text-gray-200'
-                  }`}
-                >
-                  {pdf.status === 'to-study' ? 'Mark Done' : 'Study Again'}
-                </button>
-                
-                <button
-                  onClick={() => onDelete(pdf.id!)}
-                  className="px-3 py-1 text-sm bg-red-600 text-gray-200 rounded hover:opacity-90 transition-opacity"
-                >
-                  Delete
-                </button>
+                {pdf.id !== undefined && (
+                  <>
+                    <button
+                      onClick={() => onStatusChange(pdf.id!, pdf.status === 'to-study' ? 'done' : 'to-study')}
+                      className={`px-3 py-1 text-sm rounded hover:opacity-90 transition-opacity ${
+                        pdf.status === 'to-study'
+                          ? 'bg-green-500 text-gray-200'
+                          : 'bg-gray-600 text-gray-200'
+                      }`}
+                    >
+                      {pdf.status === 'to-study' ? 'Mark Done' : 'Study Again'}
+                    </button>
+                    
+                    <button
+                      onClick={() => onDelete(pdf.id!)}
+                      className="px-3 py-1 text-sm bg-red-600 text-gray-200 rounded hover:opacity-90 transition-opacity"
+                    >
+                      Delete
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           ))}

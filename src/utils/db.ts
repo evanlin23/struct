@@ -1,11 +1,19 @@
 import type { PDF, Class } from '../utils/types';
 
 const DB_NAME = 'pdf-study-app';
-const DB_VERSION = 2; // Increased version for schema update
+const DB_VERSION = 2;
 const PDF_STORE = 'pdfs';
 const CLASS_STORE = 'classes';
 
+// Database connection singleton
+let dbConnection: IDBDatabase | null = null;
+
 export const initDB = (): Promise<IDBDatabase> => {
+  // If we already have an open connection, use it
+  if (dbConnection) {
+    return Promise.resolve(dbConnection);
+  }
+  
   return new Promise((resolve, reject) => {
     const request = indexedDB.open(DB_NAME, DB_VERSION);
     
@@ -15,8 +23,20 @@ export const initDB = (): Promise<IDBDatabase> => {
     };
     
     request.onsuccess = (event) => {
-      const db = (event.target as IDBOpenDBRequest).result;
-      resolve(db);
+      dbConnection = (event.target as IDBOpenDBRequest).result;
+      
+      // Handle connection closing from browser
+      dbConnection.onclose = () => {
+        dbConnection = null;
+      };
+      
+      // Handle version change events
+      dbConnection.onversionchange = () => {
+        dbConnection?.close();
+        dbConnection = null;
+      };
+      
+      resolve(dbConnection);
     };
     
     request.onupgradeneeded = (event) => {
@@ -68,19 +88,22 @@ export const addClass = async (classData: Class): Promise<number> => {
     const transaction = db.transaction([CLASS_STORE], 'readwrite');
     const store = transaction.objectStore(CLASS_STORE);
     
+    // Set up transaction error handling
+    transaction.onerror = (event) => {
+      console.error('Transaction error while adding class:', event);
+      reject('Transaction error while adding class');
+    };
+    
     const request = store.add(classData);
     
     request.onsuccess = (event) => {
-      resolve((event.target as IDBRequest).result as number);
+      const id = (event.target as IDBRequest).result as number;
+      resolve(id);
     };
     
     request.onerror = (event) => {
       console.error('Error adding class:', event);
       reject('Error adding class');
-    };
-    
-    transaction.oncomplete = () => {
-      db.close();
     };
   });
 };
@@ -91,6 +114,11 @@ export const getClasses = async (): Promise<Class[]> => {
   return new Promise((resolve, reject) => {
     const transaction = db.transaction([CLASS_STORE], 'readonly');
     const store = transaction.objectStore(CLASS_STORE);
+    
+    transaction.onerror = (event) => {
+      console.error('Transaction error while getting classes:', event);
+      reject('Transaction error while getting classes');
+    };
     
     const request = store.getAll();
     
@@ -103,10 +131,6 @@ export const getClasses = async (): Promise<Class[]> => {
       console.error('Error getting classes:', event);
       reject('Error getting classes');
     };
-    
-    transaction.oncomplete = () => {
-      db.close();
-    };
   });
 };
 
@@ -116,6 +140,11 @@ export const getClass = async (id: number): Promise<Class> => {
   return new Promise((resolve, reject) => {
     const transaction = db.transaction([CLASS_STORE], 'readonly');
     const store = transaction.objectStore(CLASS_STORE);
+    
+    transaction.onerror = (event) => {
+      console.error('Transaction error while getting class:', event);
+      reject('Transaction error while getting class');
+    };
     
     const request = store.get(id);
     
@@ -127,10 +156,6 @@ export const getClass = async (id: number): Promise<Class> => {
       console.error('Error getting class:', event);
       reject('Error getting class');
     };
-    
-    transaction.oncomplete = () => {
-      db.close();
-    };
   });
 };
 
@@ -140,6 +165,11 @@ export const updateClass = async (id: number, updates: Partial<Class>): Promise<
   return new Promise((resolve, reject) => {
     const transaction = db.transaction([CLASS_STORE], 'readwrite');
     const store = transaction.objectStore(CLASS_STORE);
+    
+    transaction.onerror = (event) => {
+      console.error('Transaction error while updating class:', event);
+      reject('Transaction error while updating class');
+    };
     
     // First get the current object
     const getRequest = store.get(id);
@@ -164,10 +194,6 @@ export const updateClass = async (id: number, updates: Partial<Class>): Promise<
       console.error('Error getting class for update:', event);
       reject('Error getting class for update');
     };
-    
-    transaction.oncomplete = () => {
-      db.close();
-    };
   });
 };
 
@@ -176,12 +202,23 @@ export const deleteClass = async (id: number): Promise<void> => {
   
   return new Promise((resolve, reject) => {
     const transaction = db.transaction([CLASS_STORE, PDF_STORE], 'readwrite');
+    
+    transaction.onerror = (event) => {
+      console.error('Transaction error while deleting class:', event);
+      reject('Transaction error while deleting class');
+    };
+    
     const classStore = transaction.objectStore(CLASS_STORE);
     const pdfStore = transaction.objectStore(PDF_STORE);
     const pdfIndex = pdfStore.index('classId');
     
     // Delete class
-    classStore.delete(id);
+    const deleteClassRequest = classStore.delete(id);
+    
+    deleteClassRequest.onerror = (event) => {
+      console.error('Error deleting class:', event);
+      reject('Error deleting class');
+    };
     
     // Find and delete all PDFs associated with the class
     const pdfCursorRequest = pdfIndex.openCursor(IDBKeyRange.only(id));
@@ -191,22 +228,15 @@ export const deleteClass = async (id: number): Promise<void> => {
       if (cursor) {
         pdfStore.delete(cursor.primaryKey);
         cursor.continue();
+      } else {
+        // All PDFs processed
+        resolve();
       }
     };
     
     pdfCursorRequest.onerror = (event) => {
       console.error('Error deleting PDFs for class:', event);
       reject('Error deleting PDFs for class');
-    };
-    
-    transaction.oncomplete = () => {
-      db.close();
-      resolve();
-    };
-    
-    transaction.onerror = (event) => {
-      console.error('Error in delete class transaction:', event);
-      reject('Error in delete class transaction');
     };
   });
 };
@@ -215,8 +245,14 @@ export const deleteClass = async (id: number): Promise<void> => {
 export const addPDF = async (pdf: PDF): Promise<number> => {
   const db = await initDB();
   
-  return new Promise(async (resolve, reject) => {
+  return new Promise((resolve, reject) => {
     const transaction = db.transaction([PDF_STORE, CLASS_STORE], 'readwrite');
+    
+    transaction.onerror = (event) => {
+      console.error('Transaction error while adding PDF:', event);
+      reject('Transaction error while adding PDF');
+    };
+    
     const pdfStore = transaction.objectStore(PDF_STORE);
     const classStore = transaction.objectStore(CLASS_STORE);
     
@@ -224,6 +260,8 @@ export const addPDF = async (pdf: PDF): Promise<number> => {
     const request = pdfStore.add(pdf);
     
     request.onsuccess = (event) => {
+      const pdfId = (event.target as IDBRequest).result as number;
+      
       // Update the PDF count for the class if classId exists
       if (pdf.classId !== undefined) {
         const getClassRequest = classStore.get(pdf.classId);
@@ -231,22 +269,39 @@ export const addPDF = async (pdf: PDF): Promise<number> => {
         getClassRequest.onsuccess = (event) => {
           const classData = (event.target as IDBRequest).result as Class;
           if (classData) {
-            classData.pdfCount += 1;
-            classStore.put(classData);
+            classData.pdfCount = (classData.pdfCount || 0) + 1;
+            
+            const updateClassRequest = classStore.put(classData);
+            
+            updateClassRequest.onerror = (event) => {
+              console.error('Error updating class PDF count:', event);
+              // Still resolve with PDF ID since PDF was added successfully
+              resolve(pdfId);
+            };
+            
+            updateClassRequest.onsuccess = () => {
+              resolve(pdfId);
+            };
+          } else {
+            // Class not found, but PDF was added, so resolve with PDF ID
+            resolve(pdfId);
           }
         };
+        
+        getClassRequest.onerror = (event) => {
+          console.error('Error getting class for PDF count update:', event);
+          // Still resolve with PDF ID since PDF was added successfully
+          resolve(pdfId);
+        };
+      } else {
+        // No class ID, just resolve with PDF ID
+        resolve(pdfId);
       }
-      
-      resolve((event.target as IDBRequest).result as number);
     };
     
     request.onerror = (event) => {
       console.error('Error adding PDF:', event);
       reject('Error adding PDF');
-    };
-    
-    transaction.oncomplete = () => {
-      db.close();
     };
   });
 };
@@ -258,6 +313,11 @@ export const getPDFs = async (): Promise<PDF[]> => {
     const transaction = db.transaction([PDF_STORE], 'readonly');
     const store = transaction.objectStore(PDF_STORE);
     
+    transaction.onerror = (event) => {
+      console.error('Transaction error while getting PDFs:', event);
+      reject('Transaction error while getting PDFs');
+    };
+    
     const request = store.getAll();
     
     request.onsuccess = (event) => {
@@ -268,10 +328,6 @@ export const getPDFs = async (): Promise<PDF[]> => {
       console.error('Error getting PDFs:', event);
       reject('Error getting PDFs');
     };
-    
-    transaction.oncomplete = () => {
-      db.close();
-    };
   });
 };
 
@@ -281,8 +337,13 @@ export const getClassPDFs = async (classId: number): Promise<PDF[]> => {
   return new Promise((resolve, reject) => {
     const transaction = db.transaction([PDF_STORE], 'readonly');
     const store = transaction.objectStore(PDF_STORE);
-    const index = store.index('classId');
     
+    transaction.onerror = (event) => {
+      console.error('Transaction error while getting class PDFs:', event);
+      reject('Transaction error while getting class PDFs');
+    };
+    
+    const index = store.index('classId');
     const request = index.getAll(IDBKeyRange.only(classId));
     
     request.onsuccess = (event) => {
@@ -292,10 +353,6 @@ export const getClassPDFs = async (classId: number): Promise<PDF[]> => {
     request.onerror = (event) => {
       console.error('Error getting class PDFs:', event);
       reject('Error getting class PDFs');
-    };
-    
-    transaction.oncomplete = () => {
-      db.close();
     };
   });
 };
@@ -307,6 +364,11 @@ export const getPDF = async (id: number): Promise<PDF> => {
     const transaction = db.transaction([PDF_STORE], 'readonly');
     const store = transaction.objectStore(PDF_STORE);
     
+    transaction.onerror = (event) => {
+      console.error('Transaction error while getting PDF:', event);
+      reject('Transaction error while getting PDF');
+    };
+    
     const request = store.get(id);
     
     request.onsuccess = (event) => {
@@ -317,10 +379,6 @@ export const getPDF = async (id: number): Promise<PDF> => {
       console.error('Error getting PDF:', event);
       reject('Error getting PDF');
     };
-    
-    transaction.oncomplete = () => {
-      db.close();
-    };
   });
 };
 
@@ -330,6 +388,11 @@ export const updatePDFStatus = async (id: number, status: 'to-study' | 'done'): 
   return new Promise((resolve, reject) => {
     const transaction = db.transaction([PDF_STORE], 'readwrite');
     const store = transaction.objectStore(PDF_STORE);
+    
+    transaction.onerror = (event) => {
+      console.error('Transaction error while updating PDF status:', event);
+      reject('Transaction error while updating PDF status');
+    };
     
     // First get the current object
     const getRequest = store.get(id);
@@ -355,33 +418,90 @@ export const updatePDFStatus = async (id: number, status: 'to-study' | 'done'): 
       console.error('Error getting PDF for update:', event);
       reject('Error getting PDF for update');
     };
-    
-    transaction.oncomplete = () => {
-      db.close();
-    };
   });
 };
 
 export const deletePDF = async (id: number): Promise<void> => {
   const db = await initDB();
   
-  return new Promise((resolve, reject) => {
-    const transaction = db.transaction([PDF_STORE], 'readwrite');
-    const store = transaction.objectStore(PDF_STORE);
-    
-    const request = store.delete(id);
-    
-    request.onsuccess = () => {
-      resolve();
-    };
-    
-    request.onerror = (event) => {
-      console.error('Error deleting PDF:', event);
-      reject('Error deleting PDF');
-    };
-    
-    transaction.oncomplete = () => {
-      db.close();
-    };
+  return new Promise(async (resolve, reject) => {
+    try {
+      // First get the PDF to check if it belongs to a class
+      const pdf = await getPDF(id);
+      
+      const transaction = db.transaction([PDF_STORE, CLASS_STORE], 'readwrite');
+      
+      transaction.onerror = (event) => {
+        console.error('Transaction error while deleting PDF:', event);
+        reject('Transaction error while deleting PDF');
+      };
+      
+      const pdfStore = transaction.objectStore(PDF_STORE);
+      
+      // Delete the PDF
+      const deleteRequest = pdfStore.delete(id);
+      
+      deleteRequest.onsuccess = () => {
+        // If this PDF belongs to a class, update the class PDF count
+        if (pdf && pdf.classId !== undefined) {
+          const classStore = transaction.objectStore(CLASS_STORE);
+          const getClassRequest = classStore.get(pdf.classId);
+          
+          getClassRequest.onsuccess = (event) => {
+            const classData = (event.target as IDBRequest).result as Class;
+            
+            if (classData && classData.pdfCount > 0) {
+              classData.pdfCount -= 1;
+              
+              const updateClassRequest = classStore.put(classData);
+              
+              updateClassRequest.onerror = (event) => {
+                console.error('Error updating class PDF count after deletion:', event);
+                // Still resolve since PDF was deleted successfully
+                resolve();
+              };
+              
+              updateClassRequest.onsuccess = () => {
+                resolve();
+              };
+            } else {
+              // Class not found or count already 0, so just resolve
+              resolve();
+            }
+          };
+          
+          getClassRequest.onerror = (event) => {
+            console.error('Error getting class for PDF count update after deletion:', event);
+            // Still resolve since PDF was deleted successfully
+            resolve();
+          };
+        } else {
+          // No class ID, just resolve
+          resolve();
+        }
+      };
+      
+      deleteRequest.onerror = (event) => {
+        console.error('Error deleting PDF:', event);
+        reject('Error deleting PDF');
+      };
+    } catch (error) {
+      // If there was an error getting the PDF, just try to delete it anyway
+      console.error('Error in deletePDF:', error);
+      
+      const transaction = db.transaction([PDF_STORE], 'readwrite');
+      const store = transaction.objectStore(PDF_STORE);
+      
+      const request = store.delete(id);
+      
+      request.onsuccess = () => {
+        resolve();
+      };
+      
+      request.onerror = (event) => {
+        console.error('Error in fallback PDF deletion:', event);
+        reject('Error in fallback PDF deletion');
+      };
+    }
   });
 };
