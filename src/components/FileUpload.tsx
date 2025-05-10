@@ -44,8 +44,8 @@ const FileUpload: React.FC<FileUploadProps> = ({ onUpload }) => {
       <div 
         className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors
           ${isDragging 
-            ? 'border-[var(--color-accent-primary)] bg-[var(--color-bg-secondary)]' 
-            : 'border-[var(--color-border-primary)]'
+            ? 'border-green-400 bg-gray-800' 
+            : 'border-gray-700'
           }`}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
@@ -53,7 +53,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ onUpload }) => {
         onClick={handleButtonClick}
       >
         <svg 
-          className="mx-auto h-12 w-12 text-[var(--color-text-secondary)]" 
+          className="mx-auto h-12 w-12 text-gray-400" 
           viewBox="0 0 24 24" 
           fill="none" 
           stroke="currentColor"
@@ -65,13 +65,13 @@ const FileUpload: React.FC<FileUploadProps> = ({ onUpload }) => {
           <polyline points="17 8 12 3 7 8"></polyline>
           <line x1="12" y1="3" x2="12" y2="15"></line>
         </svg>
-        <h3 className="mt-2 text-lg font-medium text-[var(--color-text-primary)]">
+        <h3 className="mt-2 text-lg font-medium text-gray-200">
           Upload PDFs
         </h3>
-        <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
+        <p className="mt-1 text-sm text-gray-400">
           Drag and drop your PDF files here, or click to select files
         </p>
-        <p className="mt-2 text-xs text-[var(--color-text-secondary)]">
+        <p className="mt-2 text-xs text-gray-400">
           Only PDF files are supported
         </p>
       </div>

@@ -37,7 +37,7 @@ const PDFList: React.FC<PDFListProps> = ({ pdfs, onStatusChange, onDelete }) => 
     return (
       <div className="text-center py-12">
         <svg 
-          className="mx-auto h-12 w-12 text-[var(--color-text-secondary)]" 
+          className="mx-auto h-12 w-12 text-gray-400" 
           viewBox="0 0 24 24" 
           fill="none" 
           stroke="currentColor" 
@@ -48,8 +48,8 @@ const PDFList: React.FC<PDFListProps> = ({ pdfs, onStatusChange, onDelete }) => 
           <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
           <polyline points="13 2 13 9 20 9"></polyline>
         </svg>
-        <h3 className="mt-2 text-lg font-medium text-[var(--color-text-primary)]">No PDFs available</h3>
-        <p className="mt-1 text-[var(--color-text-secondary)]">
+        <h3 className="mt-2 text-lg font-medium text-gray-200">No PDFs available</h3>
+        <p className="mt-1 text-gray-400">
           {pdfs[0]?.status === 'to-study' 
             ? 'Upload some PDFs to get started'
             : 'You haven\'t completed any PDFs yet'}
@@ -71,11 +71,11 @@ const PDFList: React.FC<PDFListProps> = ({ pdfs, onStatusChange, onDelete }) => 
           {pdfs.map((pdf) => (
             <div 
               key={pdf.id} 
-              className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 border border-[var(--color-border-primary)] rounded-lg bg-[var(--color-bg-primary)] hover:bg-[var(--color-border-primary)] transition-colors"
+              className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 border border-gray-700 rounded-lg bg-gray-900 hover:bg-gray-800 transition-colors"
             >
               <div className="flex items-center mb-2 sm:mb-0">
                 <svg 
-                  className="h-8 w-8 text-[var(--color-text-secondary)]" 
+                  className="h-8 w-8 text-gray-400" 
                   viewBox="0 0 24 24" 
                   fill="none" 
                   stroke="currentColor" 
@@ -90,10 +90,10 @@ const PDFList: React.FC<PDFListProps> = ({ pdfs, onStatusChange, onDelete }) => 
                   <polyline points="10 9 9 9 8 9"></polyline>
                 </svg>
                 <div className="ml-3">
-                  <h3 className="text-[var(--color-text-primary)] font-medium truncate max-w-xs">
+                  <h3 className="text-gray-200 font-medium truncate max-w-xs">
                     {pdf.name}
                   </h3>
-                  <div className="flex text-xs text-[var(--color-text-secondary)]">
+                  <div className="flex text-xs text-gray-400">
                     <span>{formatFileSize(pdf.size)}</span>
                     <span className="mx-2">•</span>
                     <span>Added on {formatDate(pdf.dateAdded)}</span>
@@ -104,7 +104,7 @@ const PDFList: React.FC<PDFListProps> = ({ pdfs, onStatusChange, onDelete }) => 
               <div className="flex space-x-2 mt-2 sm:mt-0">
                 <button
                   onClick={() => handleViewPDF(pdf)}
-                  className="px-3 py-1 text-sm bg-[var(--color-accent-secondary)] text-[var(--color-text-primary)] rounded hover:opacity-90 transition-opacity"
+                  className="px-3 py-1 text-sm bg-blue-500 text-gray-200 rounded hover:opacity-90 transition-opacity"
                 >
                   View
                 </button>
@@ -113,8 +113,8 @@ const PDFList: React.FC<PDFListProps> = ({ pdfs, onStatusChange, onDelete }) => 
                   onClick={() => onStatusChange(pdf.id!, pdf.status === 'to-study' ? 'done' : 'to-study')}
                   className={`px-3 py-1 text-sm rounded hover:opacity-90 transition-opacity ${
                     pdf.status === 'to-study'
-                      ? 'bg-[var(--color-accent-primary)] text-[var(--color-text-primary)]'
-                      : 'bg-[var(--color-border-secondary)] text-[var(--color-text-primary)]'
+                      ? 'bg-green-500 text-gray-200'
+                      : 'bg-gray-600 text-gray-200'
                   }`}
                 >
                   {pdf.status === 'to-study' ? 'Mark Done' : 'Study Again'}
@@ -122,7 +122,7 @@ const PDFList: React.FC<PDFListProps> = ({ pdfs, onStatusChange, onDelete }) => 
                 
                 <button
                   onClick={() => onDelete(pdf.id!)}
-                  className="px-3 py-1 text-sm bg-[var(--color-error)] text-[var(--color-text-primary)] rounded hover:opacity-90 transition-opacity"
+                  className="px-3 py-1 text-sm bg-red-600 text-gray-200 rounded hover:opacity-90 transition-opacity"
                 >
                   Delete
                 </button>

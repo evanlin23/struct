@@ -8,7 +8,7 @@ interface PDFViewerProps {
 }
 
 const PDFViewer: React.FC<PDFViewerProps> = ({ pdf, onClose, onStatusChange }) => {
-  const [pdfUrl, setPdfUrl] = useState<string>('');
+  const [pdfUrl, setPdfUrl] = useState('');
   
   useEffect(() => {
     // Convert ArrayBuffer to Blob URL
@@ -22,44 +22,57 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdf, onClose, onStatusChange }) =
     };
   }, [pdf]);
 
+  // Add event listener to handle Escape key
+  useEffect(() => {
+    const handleEscKey = (event) => {
+      if (event.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    document.addEventListener('keydown', handleEscKey);
+    return () => {
+      document.removeEventListener('keydown', handleEscKey);
+    };
+  }, [onClose]);
+
   return (
-    <div className="flex flex-col h-full">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-semibold text-[var(--color-text-primary)] truncate max-w-lg">
-          {pdf.name}
-        </h2>
-        <div className="flex space-x-2">
+    <div className="fixed inset-0 bg-black bg-opacity-75 z-50 flex flex-col">
+      {/* Header with controls */}
+      <div className="bg-gray-800 text-white p-4 flex items-center justify-between shadow-md">
+        <h2 className="font-semibold text-lg truncate max-w-lg">{pdf.name}</h2>
+        
+        <div className="flex items-center space-x-4">
           <button
             onClick={() => onStatusChange(pdf.id!, pdf.status === 'to-study' ? 'done' : 'to-study')}
             className={`px-3 py-1 text-sm rounded hover:opacity-90 transition-opacity ${
               pdf.status === 'to-study'
-                ? 'bg-[var(--color-accent-primary)] text-[var(--color-text-primary)]'
-                : 'bg-[var(--color-border-secondary)] text-[var(--color-text-primary)]'
+                ? 'bg-green-500 text-white'
+                : 'bg-blue-500 text-white'
             }`}
           >
             {pdf.status === 'to-study' ? 'Mark as Done' : 'Mark as To Study'}
           </button>
+          
           <button
             onClick={onClose}
-            className="px-3 py-1 text-sm bg-[var(--color-border-secondary)] text-[var(--color-text-primary)] rounded hover:opacity-90 transition-opacity"
+            className="bg-gray-600 hover:bg-gray-700 text-white px-3 py-1 rounded text-sm transition-colors"
           >
             Close
           </button>
         </div>
       </div>
 
-      <div className="flex-1 border border-[var(--color-border-primary)] rounded-lg overflow-hidden">
+      {/* PDF Content - takes remaining height */}
+      <div className="flex-1 overflow-hidden bg-gray-100">
         {pdfUrl ? (
           <iframe
             src={pdfUrl}
-            width="100%"
-            height="100%"
-            title={pdf.name}
-            className="rounded-lg"
-            style={{ border: 'none' }}
+            className="w-full h-full border-0"
+            title={`PDF Viewer - ${pdf.name}`}
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-[var(--color-text-secondary)]">
+          <div className="w-full h-full flex items-center justify-center text-gray-400">
             Loading PDF...
           </div>
         )}

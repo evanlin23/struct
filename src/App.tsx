@@ -81,7 +81,7 @@ function App() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-[var(--color-bg-primary)]">
+    <div className="flex flex-col min-h-screen bg-gray-900">
       <Header />
       <main className="flex-1 container mx-auto px-4 py-6">
         <div className="flex flex-col md:flex-row md:space-x-6">
@@ -91,13 +91,13 @@ function App() {
           </div>
           
           <div className="w-full md:w-2/3">
-            <div className="bg-[var(--color-bg-secondary)] rounded-lg p-6 shadow-lg">
-              <div className="flex mb-4 border-b border-[var(--color-border-primary)]">
+            <div className="bg-gray-800 rounded-lg p-6 shadow-lg">
+              <div className="flex mb-4 border-b border-gray-700">
                 <button
                   className={`px-4 py-2 text-lg ${
                     activeTab === 'to-study'
-                      ? 'text-[var(--color-accent-primary)] border-b-2 border-[var(--color-accent-primary)]'
-                      : 'text-[var(--color-text-secondary)]'
+                      ? 'text-green-400 border-b-2 border-green-400'
+                      : 'text-gray-400'
                   }`}
                   onClick={() => setActiveTab('to-study')}
                 >
@@ -106,8 +106,8 @@ function App() {
                 <button
                   className={`px-4 py-2 text-lg ${
                     activeTab === 'done'
-                      ? 'text-[var(--color-accent-primary)] border-b-2 border-[var(--color-accent-primary)]'
-                      : 'text-[var(--color-text-secondary)]'
+                      ? 'text-green-400 border-b-2 border-green-400'
+                      : 'text-gray-400'
                   }`}
                   onClick={() => setActiveTab('done')}
                 >
@@ -117,7 +117,7 @@ function App() {
               
               {isLoading ? (
                 <div className="flex justify-center items-center h-64">
-                  <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[var(--color-accent-primary)]"></div>
+                  <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-400"></div>
                 </div>
               ) : (
                 <PDFList
@@ -131,7 +131,7 @@ function App() {
         </div>
       </main>
       
-      <footer className="py-4 text-center text-[var(--color-text-secondary)] bg-[var(--color-bg-secondary)]">
+      <footer className="py-4 text-center text-gray-400 bg-gray-800">
         <p>&copy; {new Date().getFullYear()} PDF Study Tool</p>
       </footer>
     </div>
