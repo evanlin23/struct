@@ -1,4 +1,3 @@
-// Create a new file called PinIcon.tsx
 import React from 'react';
 
 interface PinIconProps {
@@ -6,27 +5,26 @@ interface PinIconProps {
   className?: string;
 }
 
-const PinIcon: React.FC<PinIconProps> = ({ isPinned, className = '' }) => {
+const PinIcon: React.FC<PinIconProps> = ({ isPinned, className = "h-5 w-5" }) => {
   return (
     <svg
       className={className}
-      width="16"
-      height="16"
       viewBox="0 0 24 24"
-      fill={isPinned ? "currentColor" : "none"}
+      fill="none"
       stroke="currentColor"
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
     >
       {isPinned ? (
-        // Pinned icon (filled)
-        <path d="M12 2C9.23858 2 7 4.23858 7 7C7 9.76142 9.23858 12 12 12C14.7614 12 17 9.76142 17 7C17 4.23858 14.7614 2 12 2ZM12 12L12 22" />
-      ) : (
-        // Unpinned icon (outline)
         <>
-          <circle cx="12" cy="7" r="5" fill="none" />
-          <line x1="12" y1="12" x2="12" y2="22" />
+          <path d="M21 10l-6-6m0 0L3 16l8 8 12-12-6-6z" />
+          <circle cx="8" cy="8" r="2" />
+        </>
+      ) : (
+        <>
+          <line x1="12" y1="17" x2="12" y2="22" />
+          <path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V17z" />
         </>
       )}
     </svg>

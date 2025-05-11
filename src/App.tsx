@@ -127,61 +127,63 @@ function App() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-900">
-      <Header 
-        className={selectedClass?.name || ''} 
-        onBackClick={handleBackToClasses} 
-        showBackButton={true}
-      />
-      <main className="flex-1 container mx-auto px-4 py-6">
-        <div className="flex flex-col md:flex-row md:space-x-6">
-          <div className="w-full md:w-1/3 mb-6 md:mb-0">
-            <FileUpload onUpload={handleFileUpload} />
-            <ProgressStats stats={statsData} />
-          </div>
-          
-          <div className="w-full md:w-2/3">
-            <div className="bg-gray-800 rounded-lg p-6 shadow-lg">
-              <div className="flex mb-4 border-b border-gray-700">
-                <button
-                  className={`px-4 py-2 text-lg ${
-                    activeTab === 'to-study'
-                      ? 'text-green-400 border-b-2 border-green-400'
-                      : 'text-gray-400'
-                  }`}
-                  onClick={() => setActiveTab('to-study')}
-                >
-                  To Study ({toStudyPDFs.length})
-                </button>
-                <button
-                  className={`px-4 py-2 text-lg ${
-                    activeTab === 'done'
-                      ? 'text-green-400 border-b-2 border-green-400'
-                      : 'text-gray-400'
-                  }`}
-                  onClick={() => setActiveTab('done')}
-                >
-                  Done ({donePDFs.length})
-                </button>
-              </div>
-              
-              {isLoading ? (
-                <div className="flex justify-center items-center h-64">
-                  <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-400"></div>
+    <GlobalStyles>
+      <div className="flex flex-col min-h-screen bg-gray-900">
+        <Header 
+          className={selectedClass?.name || ''} 
+          onBackClick={handleBackToClasses} 
+          showBackButton={true}
+        />
+        <main className="flex-1 container mx-auto px-4 py-6">
+          <div className="flex flex-col md:flex-row md:space-x-6">
+            <div className="w-full md:w-1/3 mb-6 md:mb-0">
+              <FileUpload onUpload={handleFileUpload} />
+              <ProgressStats stats={statsData} />
+            </div>
+            
+            <div className="w-full md:w-2/3">
+              <div className="bg-gray-800 rounded-lg p-6 shadow-lg">
+                <div className="flex mb-4 border-b border-gray-700">
+                  <button
+                    className={`px-4 py-2 text-lg ${
+                      activeTab === 'to-study'
+                        ? 'text-green-400 border-b-2 border-green-400'
+                        : 'text-gray-400'
+                    }`}
+                    onClick={() => setActiveTab('to-study')}
+                  >
+                    To Study ({toStudyPDFs.length})
+                  </button>
+                  <button
+                    className={`px-4 py-2 text-lg ${
+                      activeTab === 'done'
+                        ? 'text-green-400 border-b-2 border-green-400'
+                        : 'text-gray-400'
+                    }`}
+                    onClick={() => setActiveTab('done')}
+                  >
+                    Done ({donePDFs.length})
+                  </button>
                 </div>
-              ) : (
-                <PDFList
-                  pdfs={activeTab === 'to-study' ? toStudyPDFs : donePDFs}
-                  onStatusChange={handleStatusChange}
-                  onDelete={handleDelete}
-                />
-              )}
+                
+                {isLoading ? (
+                  <div className="flex justify-center items-center h-64">
+                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-400"></div>
+                  </div>
+                ) : (
+                  <PDFList
+                    pdfs={activeTab === 'to-study' ? toStudyPDFs : donePDFs}
+                    onStatusChange={handleStatusChange}
+                    onDelete={handleDelete}
+                  />
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      </main>
-      <Footer />
-    </div>
+        </main>
+        <Footer />
+      </div>
+    </GlobalStyles>
   );
 }
 
