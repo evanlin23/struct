@@ -6,6 +6,7 @@ import PDFList from './components/PDFList'
 import ProgressStats from './components/ProgressStats'
 import ClassManagement from './components/ClassManagement'
 import type { PDF, Class } from './utils/types'
+import Footer from './components/Footer'
 
 function App() {
   const [pdfs, setPdfs] = useState<PDF[]>([]);
@@ -178,20 +179,8 @@ function App() {
             </div>
           </div>
         </div>
+      <Footer />
       </main>
-      
-      <footer className="py-4 text-center text-gray-400 bg-gray-800">
-        <div className="flex justify-center">
-          <a 
-            href="https://github.com/evanlin23/typedef" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="text-purple-400 hover:underline mx-2"
-          >
-            GitHub
-          </a>
-        </div>
-      </footer>
     </div>
   );
 }
