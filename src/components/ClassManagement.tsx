@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import type { Class } from '../utils/types';
 import { getClasses, addClass, deleteClass, updateClass } from '../utils/db';
 import ConfirmationModal from './ConfirmationModal';
+import PinIcon from './PinIcon';
+import Footer from './Footer';
 
 interface ClassManagementProps {
   onSelectClass: (classId: number) => void;
@@ -104,11 +106,11 @@ const ClassManagement: React.FC<ClassManagementProps> = ({ onSelectClass, onCrea
     setConfirmDelete({ isOpen: false, classId: null });
   };
 
-  const handleTogglePin = async (classId: number, e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleTogglePin = async (classId: number, isPinned: boolean, e: React.MouseEvent) => {
+    e.stopPropagation(); // This is critical to prevent opening the class
     try {
-      // Use the new toggle function instead of directly updating
-      await toggleClassPin(classId);
+      // Update the class pin status
+      await updateClass(classId, { isPinned: !isPinned });
       await loadClasses();
     } catch (error) {
       console.error('Failed to toggle pin status:', error);
@@ -172,7 +174,7 @@ const ClassManagement: React.FC<ClassManagementProps> = ({ onSelectClass, onCrea
     : classes;
     
   return (
-    <div className="bg-gray-900 min-h-screen">
+    <div className="bg-gray-900 min-h-screen flex flex-col">
       <div className="bg-gray-800 py-8 mb-8">
         <div className="container mx-auto px-4">
           <h1 className="text-3xl font-bold text-center text-green-400">
@@ -181,7 +183,7 @@ const ClassManagement: React.FC<ClassManagementProps> = ({ onSelectClass, onCrea
         </div>
       </div>
 
-      <div className="container mx-auto px-4 pb-16">
+      <div className="container mx-auto px-4 pb-16 flex-grow">
         <div className="mb-8">
           <h2 className="text-xl font-bold mb-4 text-gray-200">Create New Class</h2>
           <div className="flex">
@@ -210,18 +212,7 @@ const ClassManagement: React.FC<ClassManagementProps> = ({ onSelectClass, onCrea
               showOnlyPinned ? 'bg-green-600 text-white' : 'bg-gray-700 text-gray-300'
             }`}
           >
-            <svg
-              className="h-4 w-4 mr-2"
-              viewBox="0 0 24 24"
-              fill={showOnlyPinned ? "currentColor" : "none"}
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <circle cx="12" cy="7" r="5" />
-              <line x1="12" y1="12" x2="12" y2="22" />
-            </svg>
+            <PinIcon isPinned={showOnlyPinned} className="h-4 w-4 mr-2" />
             {showOnlyPinned ? 'Show All' : 'Show Pinned'}
           </button>
         </div>
@@ -294,17 +285,7 @@ const ClassManagement: React.FC<ClassManagementProps> = ({ onSelectClass, onCrea
                         onClick={(e) => handleTogglePin(cls.id!, cls.isPinned || false, e)}
                         className={`ml-2 transition-colors ${cls.isPinned ? 'text-green-400' : 'text-gray-400 hover:text-green-400'}`}
                       >
-                        <svg
-                          className="h-4 w-4"
-                          viewBox="0 0 24 24"
-                          fill={cls.isPinned ? "currentColor" : "none"}
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <path d="M21 10l-6-6m0 0L3 16v6h6l12-12zm0 0l6 6" />
-                        </svg>
+                        <PinIcon isPinned={cls.isPinned || false} />
                       </button>
                     </div>
                   )}
@@ -360,6 +341,8 @@ const ClassManagement: React.FC<ClassManagementProps> = ({ onSelectClass, onCrea
           </div>
         )}
       </div>
+
+      <Footer />
 
       <ConfirmationModal
         isOpen={confirmDelete.isOpen}
