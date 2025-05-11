@@ -50,7 +50,10 @@ const ClassList: React.FC<ClassListProps> = ({
               key={cls.id}
               classData={cls}
               onSelect={() => onSelectClass(cls.id!)}
-              onRequestDelete={() => onRequestDelete(cls.id!)}
+              onRequestDelete={(e) => {
+                e.stopPropagation();
+                onRequestDelete(cls.id!);
+              }}
               onDataChanged={onDataChanged}
             />
           ))}

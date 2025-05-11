@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import type { Class } from '../utils/types';
-import { getClasses } from '../utils/db';
+import { getClasses, deleteClass } from '../utils/db';
 import ClassCreator from './ClassCreator';
 import ClassList from './ClassList';
 import ConfirmationModal from './ConfirmationModal';
@@ -66,11 +66,12 @@ const ClassManagement: React.FC<ClassManagementProps> = ({ onSelectClass, onCrea
     if (confirmDelete.classId === null) return;
     
     try {
-      // Delegate the actual delete to ClassList component
+      await deleteClass(confirmDelete.classId);
       setConfirmDelete({ isOpen: false, classId: null });
       await loadClasses();
     } catch (error) {
       console.error('Failed to delete class:', error);
+      setConfirmDelete({ isOpen: false, classId: null });
     }
   };
 
@@ -87,7 +88,9 @@ const ClassManagement: React.FC<ClassManagementProps> = ({ onSelectClass, onCrea
     : classes;
     
   return (
-    <div className="bg-gray-900 min-h-screen flex flex-col">
+    <div className="bg-gray-900 text-gray-200 min-h-screen flex flex-col">
+      {/* Add overflow-x-hidden to prevent horizontal scrollbar */}
+      <div className="fixed inset-0 bg-gray-900 -z-10" aria-hidden="true"></div>
       <div className="bg-gray-800 py-8 mb-8">
         <div className="container mx-auto px-4">
           <h1 className="text-3xl font-bold text-center text-green-400">

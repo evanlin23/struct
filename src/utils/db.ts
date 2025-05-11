@@ -53,8 +53,6 @@ export const initDB = (): Promise<IDBDatabase> => {
 };
 
 // --- Class related functions ---
-
-// Add Class (with doneCount initialized to 0)
 export const addClass = async (classData: Class): Promise<number> => {
   const db = await initDB();
   return new Promise((resolve, reject) => {
