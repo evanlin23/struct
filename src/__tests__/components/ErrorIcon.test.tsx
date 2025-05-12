@@ -34,6 +34,6 @@ describe('ErrorIcon Component', () => {
     expect(svgElement).toHaveAttribute('aria-hidden', 'true');
     
     // Check SVG content
-    expect(svgElement.querySelector('path')).toBeInTheDocument();
+    expect(svgElement?.querySelector('path')).toBeInTheDocument();
   });
 });

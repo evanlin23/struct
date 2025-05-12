@@ -52,7 +52,6 @@ describe('LoadingView Component', () => {
     expect(screen.getByTestId('loading-spinner')).toBeInTheDocument();
     
     // Check if default message is rendered
-    const loadingTexts = screen.queryAllByText('Loading...');
     const messageText = screen.getByText('Loading...', { selector: '.text-gray-400' });
     expect(messageText).toBeInTheDocument();
     

@@ -37,8 +37,8 @@ describe('UploadIcon Component', () => {
     expect(svgElement).toHaveAttribute('stroke', 'currentColor');
     
     // Check SVG content
-    expect(svgElement.querySelector('path')).toBeInTheDocument();
-    expect(svgElement.querySelector('polyline')).toBeInTheDocument();
-    expect(svgElement.querySelector('line')).toBeInTheDocument();
+    expect(svgElement?.querySelector('path')).toBeInTheDocument();
+    expect(svgElement?.querySelector('polyline')).toBeInTheDocument();
+    expect(svgElement?.querySelector('line')).toBeInTheDocument();
   });
 });

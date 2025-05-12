@@ -1,6 +1,6 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { vi } from 'vitest';
+import { vi, expect } from 'vitest';
 import ClassView from '../../components/ClassView';
 import type { PDF, Class } from '../../utils/types';
 import type { TabType } from '../../components/TabNavigation';
@@ -10,10 +10,19 @@ vi.mock('../../components/FileUpload', () => ({
   default: vi.fn(({ onUpload }) => (
     <div data-testid="file-upload" onClick={() => {
       // Create a mock file list
-      const mockFileList = {
+      const mockFileList: FileList = {
         length: 1,
         item: () => new File(['test'], 'test.pdf', { type: 'application/pdf' }),
-        0: new File(['test'], 'test.pdf', { type: 'application/pdf' })
+        0: new File(['test'], 'test.pdf', { type: 'application/pdf' }),
+        [Symbol.iterator]: function() {
+          let index = 0;
+          return {
+            next: () => {
+              return index < this.length ? { value: this[index++], done: false } : { done: true, value: undefined };
+            },
+            [Symbol.iterator]: function() { return this; }
+          };
+        }
       };
       onUpload(mockFileList as FileList);
     }}>
@@ -33,7 +42,7 @@ vi.mock('../../components/ProgressStats', () => ({
 vi.mock('../../components/PDFList', () => ({
   default: vi.fn(({ pdfs, listType, onStatusChange, onDelete, onViewPDF }) => (
     <div data-testid="pdf-list" data-list-type={listType}>
-      {pdfs.map((pdf) => (
+      {pdfs.map((pdf: PDF) => (
         <div key={pdf.id} data-testid={`pdf-item-${pdf.id}`}>
           <span>{pdf.name}</span>
           <button 
@@ -112,7 +121,7 @@ describe('ClassView Component', () => {
       status: 'to-study',
       classId: 'class-1',
       data: new Uint8Array([1, 2, 3]),
-      order: 0
+      lastModified: Date.now()
     },
     {
       id: 2,
@@ -122,7 +131,7 @@ describe('ClassView Component', () => {
       status: 'to-study',
       classId: 'class-1',
       data: new Uint8Array([4, 5, 6]),
-      order: 1
+      lastModified: Date.now()
     },
     {
       id: 3,
@@ -132,7 +141,7 @@ describe('ClassView Component', () => {
       status: 'done',
       classId: 'class-1',
       data: new Uint8Array([7, 8, 9]),
-      order: 2
+      lastModified: Date.now()
     }
   ];
 

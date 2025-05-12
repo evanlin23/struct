@@ -1,7 +1,8 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { vi } from 'vitest';
-import TabNavigation, { TabType } from '../../components/TabNavigation';
+import TabNavigation from '../../components/TabNavigation';
+import type { TabType } from '../../components/TabNavigation';
 
 describe('TabNavigation Component', () => {
   const mockProps = {
