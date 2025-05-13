@@ -1,15 +1,15 @@
 // Original path: __tests__/components/PDFList.test.tsx
 // src/__tests__/components/PDFList.test.tsx
-import React, { type MutableRefObject } from 'react'; // Import MutableRefObject
+import React, { type MutableRefObject } from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { vi, expect } from 'vitest';
-import { MemoryRouter } from 'react-router-dom'; // Only MemoryRouter needed
+import { MemoryRouter } from 'react-router-dom';
 import PDFList from '../../components/PDFList';
 import type { PDF } from '../../utils/types';
-import { useSortable as actualUseSortable } from '@dnd-kit/sortable'; // Import for mocking
-import type { Active, DraggableAttributes, SyntheticListeners } from '@dnd-kit/core'; // Import necessary types
-import type { SortableData } from '@dnd-kit/sortable'; // Import SortableData
+import { useSortable as actualUseSortable } from '@dnd-kit/sortable';
+import type { DraggableAttributes, DraggableSyntheticListeners, UniqueIdentifier, Over } from '@dnd-kit/core';
+import type { SortableData } from '@dnd-kit/sortable';
 
 const mockNavigate = vi.fn();
 vi.mock('react-router-dom', async (importOriginal) => {
@@ -26,35 +26,42 @@ vi.mock('@dnd-kit/core', () => ({
   KeyboardSensor: vi.fn(),
   PointerSensor: vi.fn(),
   useSensor: vi.fn(),
-  useSensors: vi.fn(() => 'sensors'),
+  useSensors: vi.fn(() => 'sensors'), // Mock return value for useSensors
 }));
 
 // --- Define mockUseSortableReturnValue BEFORE its use in vi.mock ---
-const mockUseSortableReturnValueDetails = {
-  active: null as Active | null,
+const mockUseSortableReturnValueDetails: ReturnType<typeof actualUseSortable> = { // Use ReturnType for better type inference
+  active: null,
   activeIndex: -1,
   attributes: { 'aria-roledescription': 'sortable' } as DraggableAttributes,
   data: {} as SortableData & Record<string, unknown>,
-  rect: { current: null } as MutableRefObject<DOMRect | null>,
+  rect: { current: null } as MutableRefObject<ClientRect | null>,
   index: -1,
   isDragging: false,
   isSorting: false,
   isOver: false,
-  listeners: { 'data-testid': 'drag-handle-listener' } as SyntheticListeners | undefined,
+  // listeners should be DraggableSyntheticListeners or undefined.
+  // The data-testid should be on the component's element itself.
+  // For the mock, if you're not testing the listeners' functionality, undefined or {} is fine.
+  listeners: undefined as DraggableSyntheticListeners | undefined,
   node: { current: null } as MutableRefObject<HTMLElement | null>,
-  over: null,
+  over: null as Over | null, // Correctly typed 'over'
   setNodeRef: vi.fn(),
   setActivatorNodeRef: vi.fn(),
   setDroppableNodeRef: vi.fn(),
   transform: null,
-  transition: null,
+  transition: undefined,
+  newIndex: -1,
+  items: [] as UniqueIdentifier[],
+  overIndex: -1,
+  setDraggableNodeRef: vi.fn(),
 };
 
 vi.mock('@dnd-kit/sortable', async (importOriginal) => {
   const original = await importOriginal<typeof import('@dnd-kit/sortable')>();
   return {
     ...original,
-    useSortable: vi.fn(() => mockUseSortableReturnValueDetails), // Use the predefined object
+    useSortable: vi.fn(() => mockUseSortableReturnValueDetails),
     arrayMove: vi.fn((array, from, to) => {
       const result = [...array];
       const [removed] = result.splice(from, 1);
@@ -99,13 +106,12 @@ describe('PDFList Component', () => {
     classId: 'class-123',
     onStatusChange: vi.fn(),
     onDelete: vi.fn(),
-    // onViewPDF prop removed
+    onViewPDF: vi.fn(), 
     onOrderChange: vi.fn()
   });
 
   beforeEach(() => {
     vi.clearAllMocks();
-    // Reset the useSortable mock if needed for specific test scenarios
     vi.mocked(actualUseSortable).mockReturnValue(mockUseSortableReturnValueDetails);
   });
 
@@ -201,10 +207,20 @@ describe('PDFList Component', () => {
   });
 
   test('renders DndContext and SortableContext for draggable items', () => {
+    // Ensure the SortablePDFItem (not shown here, but implied by useSortable)
+    // renders a drag handle with data-testid="drag-handle-listener"
+    // For example, if SortablePDFItem renders:
+    // <button {...listeners} data-testid="drag-handle-listener">Drag</button>
     renderWithRouter(<PDFList {...getMockProps()} pdfs={mockPDFs.filter(p => p.id !== undefined)} />);
     expect(screen.getByTestId('dnd-context')).toBeInTheDocument();
     expect(screen.getByTestId('sortable-context')).toBeInTheDocument();
-    const dragHandles = screen.getAllByTestId('drag-handle-listener');
-    expect(dragHandles.length).toBe(mockPDFs.length);
+    
+    // This assertion depends on your SortablePDFItem rendering elements with this test ID.
+    // The mock listeners: undefined means useSortable itself doesn't add this testid.
+    // Your SortablePDFItem component needs to add it.
+    // If your SortablePDFItem's drag handle button has this test id, it will pass.
+    const dragHandles = screen.queryAllByTestId('drag-handle-listener');
+    // If each SortablePDFItem has one such handle:
+    expect(dragHandles.length).toBe(mockPDFs.length); 
   });
 });

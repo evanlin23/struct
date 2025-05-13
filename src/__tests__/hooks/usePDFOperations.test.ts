@@ -286,7 +286,7 @@ describe('usePDFOperations Hook', () => {
 
     test('handles errors during status update', async () => {
       // Mock updatePDFStatus to reject
-      (updatePDFStatus as vi.Mock).mockRejectedValueOnce(new Error('DB error'));
+      vi.mocked(updatePDFStatus).mockRejectedValueOnce(new Error('DB error'));
       
       const { result } = renderHook(() => usePDFOperations(defaultProps));
       
@@ -352,7 +352,7 @@ describe('usePDFOperations Hook', () => {
 
     test('handles errors during PDF deletion', async () => {
       // Mock deletePDF to reject
-      (deletePDF as vi.Mock).mockRejectedValueOnce(new Error('DB error'));
+      vi.mocked(deletePDF).mockRejectedValueOnce(new Error('DB error'));
       
       const { result } = renderHook(() => usePDFOperations(defaultProps));
       
@@ -458,7 +458,7 @@ describe('usePDFOperations Hook', () => {
 
     test('handles errors during order update', async () => {
       // Mock updateMultiplePDFOrders to reject
-      (updateMultiplePDFOrders as vi.Mock).mockRejectedValueOnce(new Error('DB error'));
+      vi.mocked(updateMultiplePDFOrders).mockRejectedValueOnce(new Error('DB error'));
       
       const { result } = renderHook(() => usePDFOperations(defaultProps));
       

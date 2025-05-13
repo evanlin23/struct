@@ -37,6 +37,9 @@ describe('PDFViewer Component', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    // Reset createObjectURL to its default mock for each test if needed, or ensure it's clean.
+    vi.mocked(global.URL.createObjectURL).mockReturnValue(mockObjectUrl);
+
     Object.defineProperty(HTMLIFrameElement.prototype, 'src', {
       set: function(srcVal: string) { // Use a different variable name
         this.setAttribute('src', srcVal);
@@ -133,7 +136,7 @@ describe('PDFViewer Component', () => {
 
   test('handles error in PDF blob creation (URL.createObjectURL throws)', async () => {
     const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    (URL.createObjectURL as vi.Mock).mockImplementationOnce(() => {
+    vi.mocked(URL.createObjectURL).mockImplementationOnce(() => {
       throw new Error('Blob creation error');
     });
     renderWithRouter(<PDFViewer {...mockProps} />);

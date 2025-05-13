@@ -141,6 +141,7 @@ const SortablePDFItem = ({ pdf, classId, onStatusChange, onDeleteRequest }: Sort
           {...listeners}
           className="p-1 mr-2 text-gray-500 hover:text-gray-300 cursor-grab active:cursor-grabbing focus:outline-none"
           aria-label="Drag to reorder"
+          data-testid="drag-handle-listener"
         >
           <DragHandleIcon />
         </button>
