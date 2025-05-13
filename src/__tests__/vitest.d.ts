@@ -1,4 +1,3 @@
-import { expect, vi, test, describe, beforeEach } from 'vitest';
 import '@testing-library/jest-dom';
 
 declare global {
@@ -8,6 +7,7 @@ declare global {
   const expect: typeof import('vitest')['expect'];
   const vi: typeof import('vitest')['vi'];
   const beforeEach: typeof import('vitest')['beforeEach'];
+  const afterEach: typeof import('vitest')['afterEach'];
   
   // Add Jest compatibility
   namespace jest {

@@ -1,3 +1,4 @@
+// Original path: __tests__/hooks/useDBInitialization.test.ts
 import { renderHook, waitFor } from '@testing-library/react';
 import { vi } from 'vitest';
 import { useDBInitialization } from '../../hooks/useDBInitialization';
@@ -12,7 +13,7 @@ describe('useDBInitialization Hook', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     // Default mock implementation for successful initialization
-    (initDB as jest.Mock).mockResolvedValue(undefined);
+    (initDB as vi.Mock).mockResolvedValue(undefined);
   });
 
   test('initializes database successfully', async () => {
@@ -42,7 +43,7 @@ describe('useDBInitialization Hook', () => {
     
     // Mock initDB to reject
     const mockError = new Error('Database initialization failed');
-    (initDB as jest.Mock).mockRejectedValueOnce(mockError);
+    (initDB as vi.Mock).mockRejectedValueOnce(mockError);
     
     const { result } = renderHook(() => useDBInitialization());
     
@@ -67,7 +68,7 @@ describe('useDBInitialization Hook', () => {
     const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     
     // Mock initDB to reject with a string
-    (initDB as jest.Mock).mockRejectedValueOnce('String error message');
+    (initDB as vi.Mock).mockRejectedValueOnce('String error message');
     
     const { result } = renderHook(() => useDBInitialization());
     
